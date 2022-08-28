@@ -1,0 +1,44 @@
+
+Installing MongoDB ------------ on ubuntu 20.04
+(Import the public key used by the package management system)
+$ wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | sudo apt-key add -
+
+(Create a list file for MongoDB)
+$ echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-5.0.list
+
+(Reload local package database)
+$ sudo apt-get update
+
+(Install the MongoDB packages)
+$ sudo apt-get install -y mongodb-org
+
+Run MongoDB----------------
+$ sudo systemctl start mongod-----for starting the mongodb
+$ sudo systemctl status mongod----check if it is running
+
+
+Installing YCSB-------------------
+(java is a prerequisite and should be installed before ycsb)
+$ sudo apt install default-jre
+
+$ wget https://github.com/brianfrankcooper/YCSB/releases/download/0.15.0/ycsb-mongodb-binding-0.15.0.tar.gz
+$ tar xvf ycsb-mongodb-binding-0.15.0.tar.gz
+$ cd ycsb-mongodb-binding-0.15.0
+
+Using YCSB----------------------
+$ cd ycsb-mongodb-binding-0.15.0
+(loading phase--load only once for loading again have to delete the ycsb named database in mongodb)
+$ ./bin/ycsb load mongodb -s -P workloads/workloada -p recordcount=500000 -threads 16
+(running phase)
+$ ./bin/ycsb run mongodb -s -P workloads/workloada -p operationcount=500000 -threads 16
+
+Using aws instance----running ycsb from differtent EC2 instance connecting to mongodb server using connection string URI
+(change the IP address in Mongo.conf file)
+./bin/ycsb load mongodb -s -P workloads/workloada -p recordcount=5000 -threads 100 -p mongodb.url="mongodb://user:rootuser@ec2-3-16-203-113.us-east-2.compute.amazonaws.com:27017/?authSource=admin"
+./bin/ycsb run mongodb -s -P workloads/workloada -threads 100 -p mongodb.url="mongodb://user:rootuser@ec2-3-16-203-113.us-east-2.compute.amazonaws.com:27017/?authSource=admin"
+
+Different workloads are there to use and we can also implement one if we need.
+ 
+threads are the number of running threads. Think of it as the number of connecting clients
+recordcount=500000 is the total number of inserted documents. Half a million in this example
+operationcount=500000 is the total number of CRUD operations done
